@@ -3,6 +3,7 @@ const setup = require('../data/setup');
 const request = require('supertest');
 const app = require('../lib/app');
 const User = require('../lib/models/User');
+const Tweet = require('../lib/models/Tweet');
 
 // fake a user login - jest mocks always have arrow function and req res next
 jest.mock('../lib/middleware/ensureAuth.js', () => (req, res, next) => {
@@ -17,7 +18,7 @@ jest.mock('../lib/middleware/ensureAuth.js', () => (req, res, next) => {
 });
 
 describe('github-oauth routes', () => {
-  beforeEach(() => {
+  beforeAll(() => {
     return setup(pool);
   });
 
@@ -38,6 +39,17 @@ describe('github-oauth routes', () => {
           text: 'This is a tweet',
           // username comes from auth
           username: 'test_user_1'
+        });
+      });
+  });
+
+  it('gets all tweets for a user using GET', async () => {
+    return request(app)
+      .get('/api/v1/tweets/test_user_1')
+      .then(res => {
+        expect(res.body).toEqual({
+          username: 'test_user_1',
+          tweets: ['This is a tweet']
         });
       });
   });
